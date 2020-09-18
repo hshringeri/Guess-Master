@@ -1,0 +1,885 @@
+# Guess Master 3.0
+# This program is a game where the user is presented with a 4 to 6 letter secret
+#   word, and the user has 10 tries to guess the word. Each time the user guess
+#   the word, a new round will begin and the user's score will increase by 1.
+#
+# The 3 creative features are:
+#   1. final guess which let the user type in the secret word, and goes to the
+#       next round if they guessed it correctly.
+#   2. Hangman Mode, which let the user play the game in the style of hangman,
+#       where the programs draw the hangman, instead of dropping polygons.
+#   3. Bonus scores, which lets the user play a minigame when they enter every
+#       10th round, and will be awarded with 20 points if they won.
+
+#importing all the libraries needed
+from graphics import *
+import random
+from math import *
+from copy import deepcopy
+import time
+#define control() function for the control panel
+def control():
+
+    #create the panel with the aspect of 300 x 250 and set its background to light grey
+    panel = GraphWin("Welcome to:",300,250)
+    panel.setBackground("light grey")
+
+    #Create the header that says "Gussmaster 2.0"
+    titleback = Rectangle(Point(0,0),Point(300,20))
+    #set the background of the header black
+    titleback.setFill("black")
+    #draw the header background
+    titleback.draw(panel)
+
+    #display the gold text on the black background
+    title = Text(Point(150,10),"GUESS MASTER 3.0")
+    #make it bold
+    title.setStyle("bold")
+    #adjust the size
+    title.setSize(16)
+    #make the words gold
+    title.setOutline("gold")
+    #draw it on the control panel
+    title.draw(panel)
+
+    #create the button that says new
+    new = Rectangle(Point(20,40),Point(80,70))
+    #make it gold
+    new.setFill("gold")
+    new.draw(panel)
+    #display the text on the button
+    newtext = Text(Point(50,55),"NEW")
+    #set it bold
+    newtext.setStyle("bold")
+    #display it on the control panel
+    newtext.draw(panel)
+
+    #create the button that quits the game
+    quitbox = Rectangle(Point(220,40),Point(280,70))
+    #make the button black
+    quitbox.setFill('black')
+    quitbox.draw(panel)
+    #put the text on the button
+    quittext = Text(Point(250,55),"QUIT")
+    #make it bold
+    quittext.setStyle('bold')
+    #make the color gold
+    quittext.setOutline('gold')
+    quittext.draw(panel)
+   
+    #create the white text box in the control panel
+    whitebox = Rectangle(Point(25,120),Point(275,200))
+    #make it white
+    whitebox.setFill('white')
+    whitebox.draw(panel)
+
+    #create the hint button in the control panel
+    hintbutton = Rectangle(Point(120,40),Point(180,70))
+    hintbutton.setFill('light green')
+    hintbutton.draw(panel)
+    hint = Text(Point(150,55), "HINT")
+    hint.setStyle('bold')
+    hint.draw(panel)
+
+    #create a button for the scrolling high score window
+    highscorebutton = Rectangle(Point(50,80),Point(150,110))
+    highscorebutton.setFill('light blue')
+    highscorebutton.draw(panel)
+    highscoretext = Text(Point(100,95),'HIGHSCORE')
+    highscoretext.setStyle('bold')
+    highscoretext.draw(panel)
+
+    #create a button for Hangman mode
+    hangman = Rectangle(Point(170,80),Point(270,110))
+    hangman.setFill('red')
+    hangman.draw(panel)
+    hangmantext = Text(Point(220,95),'HANGMAN')
+    hangmantext.setStyle('bold')
+    hangmantext.draw(panel)
+   
+    #display the description in the white box
+    desc1 = Text(Point(150,140),"This is a game where your score is")
+    desc1.setSize(10)
+    desc1.draw(panel)
+    desc2 = Text(Point(150,160),"based on the number 4-6 letter")
+    desc2.setSize(10)
+    desc2.draw(panel)
+    desc3 = Text(Point(150,180),"words you can guess within 10 tries.")
+    desc3.setSize(10)
+    desc3.draw(panel)
+
+    #display the words at the bottom of the control panel
+    bottomwords = Text(Point(150,230),"Click NEW to start a game...")
+    bottomwords.setSize(10)
+    bottomwords.draw(panel)
+
+    #return all the graphics object needed for further coding
+    return panel, new, quitbox, hintbutton, highscorebutton, hangman
+
+#defing the hang function
+def hang(thing):
+    #change the selected object into black
+    thing.setOutline('black')
+    thing.setFill('black')
+   
+#defining the hangman game function
+def hangmangame():
+    #set up the graphics window for this mode
+    hangmanwin = GraphWin('Hangman',500,500)
+    hangmanwin.setBackground('purple')
+
+    #assign empty variables that will be used
+    rect_list = []
+    circlelist = []
+    alphabetlist = []
+    textlist = []
+    objectlist = []
+    alpha = "A"
+
+    #use a for loop to make the circles for the letters on screen
+    for i in range (26):
+        if i < 13:
+            circle = Circle(Point(40+i*35,420),17)
+            circle.setFill('black')
+            circle.draw(hangmanwin)
+            circlelist.append(circle)
+        else:
+            circle = Circle(Point(40+(i-13)*35,455),17)
+            circle.setFill('black')
+            circle.draw(hangmanwin)
+            circlelist.append(circle)
+    #using 2 for loops to type the letters in the circles
+    for j in range(0, 26):
+        alphabetlist.append(alpha)
+        alpha = chr(ord(alpha) + 1)
+    for i in range(len(circlelist)):
+        alphabet = Text(circlelist[i].getCenter(),alphabetlist[i])
+        alphabet.setSize(10)
+        alphabet.setStyle('bold')
+        alphabet.setFill('white')
+        alphabet.draw(hangmanwin)
+        textlist.append(alphabet)
+
+    #creating the object call base and append to objectlist
+    base = Rectangle(Point(150,350),Point(350,380))
+    base.setFill('purple')
+    base.setOutline('purple')
+    base.draw(hangmanwin)
+    objectlist.append(base)
+
+    #creating an object call verticalrect and append to objectlist
+    verticalrect = Rectangle(Point(180,150),Point(200,350))
+    verticalrect.setFill('purple')
+    verticalrect.setOutline('purple')
+    verticalrect.draw(hangmanwin)
+    objectlist.append(verticalrect)
+    #creating an object call horizontalrect and append to objectlist
+    horizontalrect = Rectangle(Point(200,150),Point(290,170))
+    horizontalrect.setFill('purple')
+    horizontalrect.setOutline('purple')
+    horizontalrect.draw(hangmanwin)
+    objectlist.append(horizontalrect)
+    #creating an object call rope and append to objectlist
+    rope = Rectangle(Point(260,170),Point(268,200))
+    rope.setFill('purple')
+    rope.setOutline('purple')
+    rope.draw(hangmanwin)
+    objectlist.append(rope)
+    #creating an object call head and append to objectlist
+    head = Circle(Point(265,216),16)
+    head.setOutline('purple')
+    head.draw(hangmanwin)
+    objectlist.append(head)
+    #creating an object call body and append to objectlist
+    body = Line(Point(265,232),Point(265,282))
+    body.setOutline('purple')
+    body.draw(hangmanwin)
+    objectlist.append(body)
+    #creating an object call leftleg and  append to objectlist
+    leftleg = Line(Point(265,282),Point(255,320))
+    leftleg.setOutline('purple')
+    leftleg.draw(hangmanwin)
+    objectlist.append(leftleg)
+    #creating an object call rightleg and append to objectlist
+    rightleg = Line(Point(265,282),Point(275,320))
+    rightleg.setOutline('purple')
+    rightleg.draw(hangmanwin)
+    objectlist.append(rightleg)
+    #creating an object call leftarm and append to objectlist
+    leftarm = Line(Point(265,232),Point(255,280))
+    leftarm.setOutline('purple')
+    leftarm.draw(hangmanwin)
+    objectlist.append(leftarm)
+    #creating an object call rightarm and append to objectlist
+    rightarm = Line(Point(265,232),Point(275,280))
+    rightarm.setOutline('purple')
+    rightarm.draw(hangmanwin)
+    objectlist.append(rightarm)
+
+    #opening data file
+    infile = open("words.txt", "r")
+    #reading the words form file
+    wordlist = infile.readlines()
+    #closing the file
+    infile.close()
+    #randomly choosing a word
+    randnum = random.randint(0,1201)
+    #choosing the word from the list
+    word = wordlist[randnum]
+    #getting rid of the \n
+    word = word.strip("\n")
+    #use a for loop to make the rectangles for the secret word at the top of the window
+    for i in range(len(word)):
+        rect = Rectangle(Point(225-50*int(len(word)/2)+i*50,60),Point(225-50*int(len(word)/2)+i*50+50,110))
+        rect.setFill("pink")
+        rect.draw(hangmanwin)
+        rect_list.append(rect)
+    #return the variables that will be use in other functions
+    return hangmanwin, circlelist, textlist, objectlist, rect_list, word
+
+#define game() function
+def game():
+    #create the game window and make the background gold
+    win = GraphWin("Save the Block P", 500,500)
+    win.setBackground("gold")
+
+    #defining all the variables needed for later use
+    circlelist = []
+    plist = []
+    rect_list = []
+    alphabetlist = []
+    textlist = []
+    alpha = "A"
+
+    #use a for loop to display the black circles
+    for i in range (26):
+        if i < 13:
+            circle = Circle(Point(40+i*35,420),17)
+            circle.setFill('black')
+            circle.draw(win)
+            circlelist.append(circle)
+        else:
+            circle = Circle(Point(40+(i-13)*35,455),17)
+            circle.setFill('black')
+            circle.draw(win)
+            circlelist.append(circle)
+    #use two for loop to make a list of the white letters that goes inside the black circle
+    for j in range(0, 26):
+        alphabetlist.append(alpha)
+        alpha = chr(ord(alpha) + 1)
+    for i in range(len(circlelist)):
+        alphabet = Text(circlelist[i].getCenter(),alphabetlist[i])
+        alphabet.setSize(10)
+        alphabet.setStyle('bold')
+        alphabet.setFill('white')
+        alphabet.draw(win)
+        textlist.append(alphabet)
+
+    #use a for loop to make the P out of polygons
+    for i in range(11):
+       
+        if i < 3:
+            polygon = Polygon(Point(210+i*50,140),Point(260+i*50,140),Point(250+i*50,180),Point(200+i*50,180))
+            polygon.draw(win)
+            polygon1 = Polygon(Point(210+i*50,140),Point(260+i*50,140),Point(250+i*50,180),Point(200+i*50,180))
+            polygon1.setFill('black')
+            polygon1.draw(win)
+            plist.append(polygon1)
+        elif i >= 3 and i<6:
+            polygon = Polygon(Point(200+(i-3)*50,180),Point(250+(i-3)*50,180),Point(240+(i-3)*50,220),Point(190+(i-3)*50,220))
+            polygon.draw(win)
+            if i != 4:
+                polygon1 = Polygon(Point(200+(i-3)*50,180),Point(250+(i-3)*50,180),Point(240+(i-3)*50,220),Point(190+(i-3)*50,220))
+                polygon1.setFill('black')
+                polygon1.draw(win)
+            plist.append(polygon1)
+        elif i >= 6 and i<9:
+            polygon = Polygon(Point(190+(i-6)*50,220),Point(240+(i-6)*50,220),Point(230+(i-6)*50,260),Point(180+(i-6)*50,260))
+            polygon.draw(win)
+            polygon1 = Polygon(Point(190+(i-6)*50,220),Point(240+(i-6)*50,220),Point(230+(i-6)*50,260),Point(180+(i-6)*50,260))
+            polygon1.setFill('black')
+            polygon1.draw(win)
+            plist.append(polygon1)
+        elif i == 9:
+            polygon =Polygon(Point(180,260),Point(230,260),Point(220,300),Point(170,300))
+            polygon.draw(win)
+            polygon1 = Polygon(Point(180,260),Point(230,260),Point(220,300),Point(170,300))
+            polygon1.setFill('black')
+            polygon1.draw(win)
+            plist.append(polygon1)
+        else:
+            polygon = Polygon(Point(160,300),Point(230,300),Point(220,340),Point(150,340))
+            polygon.draw(win)
+            polygon1 = Polygon(Point(160,300),Point(230,300),Point(220,340),Point(150,340))
+            polygon1.setFill('black')
+            polygon1.draw(win)
+            plist.append(polygon1)
+
+   
+    #opening data file
+    infile = open("words.txt", "r")
+    #reading the words form file
+    wordlist = infile.readlines()
+    #closing the file
+    infile.close()
+    #randomly choosing a word
+    randnum = random.randint(0,1201)
+    #choosing the word from the list
+    word = wordlist[randnum]
+    #getting rid of the \n
+    word = word.strip("\n")
+    #use a for loop to make the rectangles for the secret word at the top of the window
+    for i in range(len(word)):
+        rect = Rectangle(Point(225-50*int(len(word)/2)+i*50,60),Point(225-50*int(len(word)/2)+i*50+50,110))
+        rect.setFill("gold")
+        rect.draw(win)
+        rect_list.append(rect)
+    #return all the variables needed for later codes
+    return win, circlelist, textlist,rect_list, plist, word
+
+#define the drop function with two arguements
+def drop(polygon,win):
+    #importing sleep from time library
+    from time import sleep
+    #make the polygon red
+    polygon.setFill('red')
+    #use a for loop to move the polygon downward at a certain speed
+    for i in range(30):
+        polygon.move(0,20)
+        time.sleep(.05)
+
+#define clickedrect function to detect which rectangle was clicked    
+def clickedrect(point,rectangle):
+    if point.getY() < rectangle.getP2().getY() and point.getY() > rectangle.getP1().getY() and point.getX()<rectangle.getP2().getX() and point.getX()>rectangle.getP1().getX():
+        #return True if the point is within the rectangle
+        return True
+    else:
+        #return False if the point is outside of the rectangle
+        return False
+
+#defind clickedcirc functionn to detect which circle was clicked
+def clickedcirc(point,circle):
+     #get the radius
+    radius = circle.getRadius()
+    #get the center point of the circle
+    cpoint_circle = circle.getCenter()
+    #find the x of the centerpoint
+    x = cpoint_circle.getX()
+    #find the y of the centerpoint
+    y = cpoint_circle.getY()
+    #find the x of where the user clicks
+    x1 = point.getX()
+    #find the y of where the user clicks
+    y1 = point.getY()
+    #find the distance between the x of the point and the center point
+    distance_x = x1 - x
+    #find the distance between the y of the point and the center point
+    distance_y = y1 - y
+    #find the distance between the point and the center point of the circle
+    hypotenuse = sqrt((distance_x)**2 + (distance_y)**2)
+    #use the if statement to check whether the user clicked on the circle
+    if hypotenuse <= radius:
+        #returns true if they did
+        return True
+    else:
+        #returns false if they did not
+        return False
+
+#define colorchange function to change the color of the circle and text being clicked
+def colorchange(circlelist,textlist,i):
+    circlelist[i].setFill("gold")
+    textlist[i].setFill("black")
+    #return the letter that was clicked
+    return textlist[i]
+#defining colorchanghangman only to change the color of the circle in hangman mode
+def colorchangehangman(circlelist,textlist,i):
+    circlelist[i].setFill("purple")
+    textlist[i].setFill("black")
+    #return the letter that was clicked
+    return textlist[i]
+
+#defining hint function
+def hint(plist,circlelist,textlist,win,wrong,chance,word1,score):
+    #call the drop function
+    drop(plist[chance[wrong]],win)
+    #add 1 to wrong
+    wrong += 1
+    #call the drop function
+    drop(plist[chance[wrong]],win)
+    #add 1 to wrong
+    wrong += 1
+    #-2 in score
+    score = score - 2
+    #assign a list of letters
+    hintlist = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U",'V','W','X','Y','Z']
+    #create another list that matches the letters index
+    num = list(range(0,25))
+    #assign an empty list
+    indexlist= []
+    #use a for loop to take out the correct letters from the list and append to indexlist
+    for i in set(word1):
+        index1 = hintlist.index(i)
+        indexlist.append(index1)
+    #use for loop to remove those the numbers that corresponds to the letters
+    for i in indexlist:
+        num.remove(i)
+    #Use a for loop to randomly remove 3 wrong letters
+    for i in range(3):
+        change = random.choice(num)
+        num.remove(change)
+        colorchange(circlelist,textlist, change)
+        #add it to word1 so it wouldnt be chosen twice
+        word1 = word1 + textlist[change].getText()
+    #return all the variables that will be needed in other function
+    return plist,wrong,score,word1    
+
+#defining the move() function
+def move(scorewin,scorelist,header,headerline):
+    #use a while loop to keep the high scores moving while the window is still open
+    while scorewin != '':
+        #get the position of the header and the header line
+        if header.getAnchor().getY()< 0:
+            header.move(0,200)
+        if headerline.getAnchor().getY()< 0:
+            headerline.move(0,200)
+        #move the header and the headerline
+        header.move(0,-2)
+        headerline.move(0,-2)
+        #use for loopes to get the position of all the high scores
+        for i in scorelist:
+            #if it is out of the window then move it to the bottom of the window
+            if i.getAnchor().getY()<0:
+                i.move(0,200)
+            i.move(0,-2)
+        #sleep .05 secs to make the movement smoother
+        time.sleep(.05)
+        #If user clicks on the window then return to the main function
+        if scorewin.checkMouse() != None:
+            return
+#defining the save function
+def save(win,roundno,score):
+    #creating the graphics objects that is needed
+    box = Rectangle(Point(50,200),Point(450,300))
+    box.setFill('light grey')
+    box.draw(win)
+    nametext = Text(Point(100,250),'NAME: ')
+    nametext.setOutline('blue')
+    nametext.setStyle('bold')
+    nametext.draw(win)
+    endsave = Entry(Point(190,250),10)
+    endsave.setFill('white')
+    endsave.draw(win)
+    saverect = Rectangle(Point(250,235),Point(320,265))
+    saverect.setFill('black')
+    saverect.draw(win)
+    saveword = Text(Point(285,250),'SAVE')
+    saveword.setOutline('white')
+    saveword.setStyle('bold')
+    saveword.draw(win)
+
+   #use a while loop to check whether the user has entered a name and constantly check the mouse of the use
+    while saveword != '':
+        click =  win.checkMouse()
+        #if user clicks on the save button, then save it to the output
+        if click != None and clickedrect(click,saverect) == True:
+            name = endsave.getText()
+            output = open('scores.txt','a')
+            output.write('{0},{1},{2}\n'.format(name,roundno,score))
+            output.close()
+            return True
+   
+   
+   
+#defining the main function
+def main():
+    #calling the control function for the control panel
+    panel, new, quitbox,hintbutton,highscorebutton, hangman = control()
+    #assigning variables
+    win, circlelist, textlist, rect_list, plist, word =('','','','','','')
+    hangmanwin, circlelist, textlist, objectlist, rect_list, word = ('','','','','','')
+    quitnotclick = True
+    guessword = []
+   
+    #use a while loop for the code as long as quit was not clicked
+    while quitnotclick == True:
+        #continuously check mouse
+        click = panel.checkMouse()
+        #if quit was clicked then stop the while loop and close the windo
+        if click != None and clickedrect(click,quitbox) == True:
+            quitnotclick = False
+        #if HANGMAN was clicked then open the hangman window
+        if click != None and clickedrect(click,hangman)==True:
+            #call the hangmangame() function
+            hangmanwin, circlelist, textlist, objectlist, rect_list, word = hangmangame()
+            #start with round 1
+            roundno = 1
+            #assigning the variables for later
+            chance = [0,1,2,3,5,6,7,8,9,10]
+            #score starts with 10 and 0 wrongs
+            score = 10
+            wrong = 0
+            #setup the scoreboard
+            #and display it on the window
+            scoreboard = Text(Point(250, 30), "Score : " + str(score))
+            scoreboard.draw(hangmanwin)
+
+        if hangmanwin != '' and click == None:
+        #continuously check for mouseclick in the game panel
+            click2 = hangmanwin.checkMouse()
+            #if user clicked on game window
+            if click2 != None:
+                #use a for loop to check whether the user clicked any of the circle
+                for i in circlelist:
+                    #call clickedcirc to check
+                    clickcircle = clickedcirc(click2,i)
+                    #use if statement to change the color of the circle
+                    if clickcircle == True:
+                        #if a certain circle is clicked on, change the color of the circle and the text
+                        alphabet = colorchangehangman(circlelist, textlist,circlelist.index(i))
+                        #setup a variable to check whether the input is right or wrong
+                        choice = False
+                        #use a for loop to check the input
+                        for i in range(len(list(word))):
+                            if alphabet.getText() == word[i]:
+                                choice = True
+                                if choice == True:
+                                    #display the letter in one of the rectangles at the top of the screen
+                                    guess = Text(rect_list[i].getCenter(),alphabet.getText())
+                                    guess.draw(hangmanwin)
+                                    #put it into a list
+                                    guessword.append(alphabet.getText())
+                        #if the user guessed the correct word
+                        if choice == True:
+                            if ''.join(sorted(list(set(guessword)))) == ''.join(sorted(list(set(list(word))))):
+                                #display text as in project2 manual
+                                end = Text(Point(250,250),"You WIN! BOILER UP!")
+                                end.setSize(34)
+                                end.setFill("orange")
+                                continuetext = Text(Point(250,275),"Click to continue.")
+                                continuetext.setFill("grey")
+                                continuetext.draw(hangmanwin)
+                                end.draw(hangmanwin)
+                                #wait for user to click
+                                hangmanwin.getMouse()
+                                #close the game window
+                                hangmanwin.close()
+                                #add 10 to the current score for next round
+                                score = score + 10
+
+                                #call the game function again
+                                hangmanwin, circlelist, textlist, objectlist, rect_list,word = hangmangame()
+                                #reset the number of wrong input
+                                wrong = 0
+                                roundno += 1
+                                guessword = []
+                                #display the scoreboard
+                                scoreboard = Text(Point(250, 30), "Score : " + str(score))
+                                scoreboard.draw(hangmanwin)
+                        #if the user guessed the wrong letter
+                        if choice == False:
+                            #decrease score by 1
+                            score = score - 1
+                            #update scoreboard
+                            scoreboard.setText("Score : " + str(score))
+                            #call the hang function
+                            hang(objectlist[wrong])
+                            #increase the number of wrong inputs by 1
+                            wrong += 1
+            #if number of wrong tries equals to 10, display the following
+            if wrong == 10:
+                endtext = Text(Point(250,250),'OH NO! THE MAN DIED!')
+                endtext.setStyle('bold')
+                endtext.setOutline('pink')
+                endtext.setSize(30)
+                endtext.draw(hangmanwin)
+                hangmanwin.getMouse()
+                hangmanwin.close()
+                hangmanwin = ''
+               
+        #if new was clicked then call game function
+        if click != None and clickedrect(click,new) == True:
+            #if window exist
+            if win != '':
+                #close window
+                win.close()
+            #open new game window
+            win, circlelist, textlist, rect_list, plist, word = game()
+            roundno = 1
+            word1 = word
+            #assigning the variables for later
+            chance = [0,1,2,3,5,6,7,8,9,10]
+            score = 10
+            wrong = 0
+            #setup the scoreboard
+            #and display it on the window
+            scoreboard = Text(Point(250, 30), "Score : " + str(score))
+            scoreboard.draw(win)
+           
+
+        if click != None and clickedrect(click,hintbutton)== True and win != '':
+            plist,wrong,score,word1 = hint(plist,circlelist,textlist,win,wrong,chance,word1,score)
+            scoreboard.setText("Score : " + str(score))
+        #if window exist and the user is not clicking on the control panel
+        if win != '' and click == None:
+            #continuously check for mouseclick in the game panel
+            click1 = win.checkMouse()
+            #if user clicked on game window
+            if click1 != None:
+                #use a for loop to check whether the user clicked any of the circle
+                for i in circlelist:
+                    #call clickedcirc to check
+                    clickcircle = clickedcirc(click1,i)
+                    #use if statement to change the color of the circle
+                    if clickcircle == True:
+                        #if a certain circle is clicked on, change the color of the circle and the text
+                        alphabet = colorchange(circlelist, textlist,circlelist.index(i))
+                        #setup a variable to check whether the input is right or wrong
+                        choice = False
+                        #use a for loop to check the input
+                        for i in range(len(list(word))):
+                            if alphabet.getText() == word[i]:
+                                choice = True
+                                if choice == True:
+                                    #display the letter in one of the rectangles at the top of the screen
+                                    guess = Text(rect_list[i].getCenter(),alphabet.getText())
+                                    guess.draw(win)
+                                    #put it into a list
+                                    guessword.append(alphabet.getText())
+                                   
+                        #if the user guessed the correct word
+                        if choice == True:
+                            if ''.join(sorted(list(set(guessword)))) == ''.join(sorted(list(set(list(word))))):
+                                #display text as in project2 manual
+                                end = Text(Point(250,250),"You win! BOILER UP!")
+                                end.setSize(34)
+                                end.setFill("grey")
+                                continuetext = Text(Point(250,275),"Click to continue.")
+                                continuetext.setFill("grey")
+                                continuetext.draw(win)
+                                end.draw(win)
+                                #wait for user to click
+                                win.getMouse()
+                                #close the game window
+                                win.close()
+                                #add 10 to the current score for next round
+                                score = score + 10
+
+                                #call the game function again
+                                win, circlelist, textlist, rect_list, plist, word = game()
+                                #reset the number of wrong input
+                                wrong = 0
+                                roundno += 1
+                                # if it is the tenth round (20 or 30 or 40 etc.) run the tenth round game
+                                if roundno % 10 == 0:
+                                    if tenthroundgame() is True:
+                                        # if they win increase score by 20
+                                        score = score + 20
+                                guessword = []
+                                print(word)
+                                #display the scoreboard
+                                scoreboard = Text(Point(250, 30), "Score : " + str(score))
+                                scoreboard.draw(win)
+                        #if the user guessed the wrong letter
+                        if choice == False:
+                            #decrease score by 1
+                            score = score - 1
+                            #update scoreboard
+                            scoreboard.setText("Score : " + str(score))
+                            #call the drop function
+                            drop(plist[chance[wrong]],win)
+                            #increase the number of wrong inputs by 1
+                            wrong += 1
+            #if number of wrong tries equals to 10
+            if wrong == 10:
+                if finalguess(win,word) == True:
+               
+                    #call the game function again
+                    win, circlelist, textlist, rect_list, plist, word = game()
+                    #reset the number of wrong input
+                    wrong = 0
+                    roundno += 1
+                    guessword = []
+                    #display the scoreboard
+                    scoreboard = Text(Point(250, 30), "Score : " + str(score))
+                    scoreboard.draw(win)
+
+                else:
+                    #call save() function to save the score
+                    saving = save(win,roundno,score)
+                    #close the window after saving
+                    if saving == True:
+                        win.close()
+                        win = ''
+               
+        #if the user clicked on the highscore button      
+        if click != None and clickedrect(click,highscorebutton) == True:
+            #open the related file
+            f = open('scores.txt',"r")
+            #read the file and make it a list
+            flist = f.readlines()
+            #assign an empty list
+            formatflist = []
+            #format the list, and append it to formatlist
+            for i in range(len(flist)):
+                flist[i] = flist[i].strip('\n')
+                flist[i] = flist[i].split(',')
+                flist[i][2] = int(flist[i][2])
+                flist[i].reverse()
+                formatflist.append(flist[i])
+            #sort the format list
+            formatflist.sort(reverse = True)
+            #display the window with the header and the headerline
+            scorewin = GraphWin('HIGH SCORES',240,200)
+            header = Text(Point(120,17),'Player\tRounds\tScore')
+            header.setStyle('bold')
+            header.draw(scorewin)
+            headerline = Text(Point(120,30),'=-=-=-=-=-=-=-=-=-=-=-=-=-=-=')
+            headerline.draw(scorewin)
+            #make an empty list for the top 7 scores
+            scorelist = []
+            #use a for loop to append the top 7 scores into scorelist[]
+            for i in range(7):
+                score = Text(Point(120,35 + (10*((i+1)*2))),'{0:<9}\t{1:>4}\t{2:>2}'.format(formatflist[i][2],formatflist[i][1],formatflist[i][0]))
+                score.draw(scorewin)
+                scorelist.append(score)
+            #call move function
+            move(scorewin,scorelist,header,headerline)
+            #close the window after calling move function
+            scorewin.close()
+           
+           
+        #check to see if the user clicked on the quit button during the game
+        if click != None and clickedrect(click,quitbox) == True and win != '' :
+            if win != '':
+                win.close()
+            quitnotclick = False
+
+    panel.close()
+    hangmanwin.close()
+
+# define the final guess function
+def finalguess(win,word):
+    # create the objects used in the game the first being a check box
+    check = Rectangle(Point(380,320), Point (450,350))
+    check.setFill('red')
+    checkword = Text(Point(415,335),"check")
+    checkword.setStyle('bold')
+    check.draw(win)
+    checkword.draw(win)
+    # Then create an entry 
+    fguess = Entry(Point(350,300),8)
+    fguess.setFill("white")
+    # make sure user understands this is their final guess
+    fguessheader = Text(Point(275,300), "Final guess:")
+    # design it
+    fguessheader.setOutline('red')
+    fguessheader.setStyle('bold')
+    fguessheader.setSize(10)
+    # draw them into the windo
+    fguess.draw(win)
+    fguessheader.draw(win)
+
+    # create an endless while loop my having a boolean variable
+    f = True
+    while f is True:
+        # have a checkmouse
+        point = win.checkMouse()
+        # create a condition that only works if their is a click
+        if point != None:
+            # make sure the click is in the check box
+            if clickedrect(point, check) == True:
+                # create a variable for the text in the entry box
+                txt = fguess.getText()
+                # if that text is equal to the secret word
+                if txt.upper() == word:
+                    # close the window and return true else make f false
+                    win.close()
+                    return True
+                else:
+                    f = False
+    # if no true is returned, return false
+    return False
+
+
+# define the tenthroundgame round
+def tenthroundgame():
+    # create a window
+    win = GraphWin("Rounds of ten",300,300)
+    # describle the rules and set the size for that
+    inst = Text(Point(150,250),"If you get u click on 2 blues u get twenty points")
+    inst.setSize(10)
+    # draw this into the window
+    inst.draw(win)
+    # create a list of 2 colors
+    listofcolors = ["blue","red"]
+    # assign them randomly to four different variables
+    color1 = random.choice(listofcolors)
+    color2 = random.choice(listofcolors)
+    color3 = random.choice(listofcolors)
+    color4 = random.choice(listofcolors)
+    # make a list of these colors
+    listofblockcolors = [color1,color2,color3,color4]
+    # create 4 blocks of those colors
+    block1 = Rectangle(Point(15,125),Point(65,175))
+    block1.setFill(color1)
+    block2 = Rectangle(Point(90,125),Point(140,175))
+    block2.setFill(color2)
+    block3 = Rectangle(Point(165,125),Point(215,175))
+    block3.setFill(color3)
+    block4 = Rectangle(Point(240,125),Point(290,175))
+    block4.setFill(color4)
+    # draw these blocks into the window
+    block1.draw(win)
+    block2.draw(win)
+    block3.draw(win)
+    block4.draw(win)
+    # make a list of these blocks
+    blocklist = [block1,block2,block3,block4]
+   
+
+    # do the same thing as before, but make sure the blocks are all black now and they cover those blocks
+    bblock1 = Rectangle(Point(15,125),Point(65,175))
+    bblock1.setFill("black")
+    bblock2 = Rectangle(Point(90,125),Point(140,175))
+    bblock2.setFill("black")
+    bblock3 = Rectangle(Point(165,125),Point(215,175))
+    bblock3.setFill("black")
+    bblock4 = Rectangle(Point(240,125),Point(290,175))
+    bblock4.setFill("black")
+    bblock1.draw(win)
+    bblock2.draw(win)
+    bblock3.draw(win)
+    bblock4.draw(win)
+    blackblocklist = [bblock1,bblock2,bblock3,bblock4]
+
+    # create 2 counts
+    count = 0
+    c = 0
+    # zip these 2 lists so they are with theyre equivilent black blocks
+    # create a for loop that goes through this zipped list
+    for bb,color in zip(blackblocklist,listofblockcolors):
+        # pause the game and wait for click
+        click = win.getMouse()
+        # if a black block is clicked:
+        if clickedrect(click,bb):
+            # undraw it
+            bb.undraw()
+            # if the color is blue up the count of "count"
+            if color == "blue":
+                count +=1
+            # if count is 2 return true
+            if count == 2:
+                return True
+       # make sure only 2 rounds are played by creating this variable
+        c += 1
+        # end the game if 2 rounds are up
+        if c == 2:
+            win.close()
+            break
+    # return false if true isnt returned
+    return False  
+
+
+               
+#call main function
+main()
