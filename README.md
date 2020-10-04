@@ -1,4 +1,3 @@
-# Guess Master 3.0
 Guess Master 3.0 This program is a game where the user is presented with a 4 to 6 letter secret word, and the user has 10 tries to guess the word. Each time the user guess the word, a new round will begin and the user's score will increase by 1. 
 
 3 distinct features are:
